@@ -468,6 +468,8 @@ public class TestHelpers {
       return new GenericArrayData((Object[]) actual);
     } else if (int[].class.equals(arrayClass)) {
       return new GenericArrayData((int[]) actual);
+    } else if (Integer[].class.equals(arrayClass)) {
+      return new GenericArrayData((Integer[]) actual);
     } else if (long[].class.equals(arrayClass)) {
       return new GenericArrayData((long[]) actual);
     } else if (float[].class.equals(arrayClass)) {
