@@ -75,7 +75,7 @@ public class FlinkValueReaders {
   }
 
   static ValueReader<DecimalData> decimal(
-      ValueReader<byte[]> unscaledReader, int precision, int scale) {
+          ValueReader<byte[]> unscaledReader, int precision, int scale) {
     return new DecimalReader(unscaledReader, precision, scale);
   }
 
@@ -96,7 +96,7 @@ public class FlinkValueReaders {
   }
 
   static ValueReader<RowData> struct(
-      List<ValueReader<?>> readers, Types.StructType struct, Map<Integer, ?> idToConstant) {
+          List<ValueReader<?>> readers, Types.StructType struct, Map<Integer, ?> idToConstant) {
     return new StructReader(readers, struct, idToConstant);
   }
 
@@ -150,7 +150,7 @@ public class FlinkValueReaders {
     public DecimalData read(Decoder decoder, Object reuse) throws IOException {
       byte[] bytes = bytesReader.read(decoder, null);
       return DecimalData.fromBigDecimal(
-          new BigDecimal(new BigInteger(bytes), scale), precision, scale);
+              new BigDecimal(new BigInteger(bytes), scale), precision, scale);
     }
   }
 
@@ -330,7 +330,7 @@ public class FlinkValueReaders {
     private final int numFields;
 
     private StructReader(
-        List<ValueReader<?>> readers, Types.StructType struct, Map<Integer, ?> idToConstant) {
+            List<ValueReader<?>> readers, Types.StructType struct, Map<Integer, ?> idToConstant) {
       super(readers, struct, idToConstant);
       this.numFields = readers.size();
     }

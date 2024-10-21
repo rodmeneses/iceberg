@@ -39,20 +39,20 @@ abstract class TypeToSchema extends TypeUtil.SchemaVisitor<Schema> {
   private static final Schema FLOAT_SCHEMA = Schema.create(Schema.Type.FLOAT);
   private static final Schema DOUBLE_SCHEMA = Schema.create(Schema.Type.DOUBLE);
   private static final Schema DATE_SCHEMA =
-      LogicalTypes.date().addToSchema(Schema.create(Schema.Type.INT));
+          LogicalTypes.date().addToSchema(Schema.create(Schema.Type.INT));
   private static final Schema TIME_SCHEMA =
-      LogicalTypes.timeMicros().addToSchema(Schema.create(Schema.Type.LONG));
+          LogicalTypes.timeMicros().addToSchema(Schema.create(Schema.Type.LONG));
   private static final Schema TIMESTAMP_SCHEMA =
-      LogicalTypes.timestampMicros().addToSchema(Schema.create(Schema.Type.LONG));
+          LogicalTypes.timestampMicros().addToSchema(Schema.create(Schema.Type.LONG));
   private static final Schema TIMESTAMPTZ_SCHEMA =
-      LogicalTypes.timestampMicros().addToSchema(Schema.create(Schema.Type.LONG));
+          LogicalTypes.timestampMicros().addToSchema(Schema.create(Schema.Type.LONG));
   private static final Schema TIMESTAMP_NANO_SCHEMA =
-      LogicalTypes.timestampNanos().addToSchema(Schema.create(Schema.Type.LONG));
+          LogicalTypes.timestampNanos().addToSchema(Schema.create(Schema.Type.LONG));
   private static final Schema TIMESTAMPTZ_NANO_SCHEMA =
-      LogicalTypes.timestampNanos().addToSchema(Schema.create(Schema.Type.LONG));
+          LogicalTypes.timestampNanos().addToSchema(Schema.create(Schema.Type.LONG));
   private static final Schema STRING_SCHEMA = Schema.create(Schema.Type.STRING);
   private static final Schema UUID_SCHEMA =
-      LogicalTypes.uuid().addToSchema(Schema.createFixed("uuid_fixed", null, null, 16));
+          LogicalTypes.uuid().addToSchema(Schema.createFixed("uuid_fixed", null, null, 16));
   private static final Schema BINARY_SCHEMA = Schema.create(Schema.Type.BYTES);
 
   static {
@@ -117,11 +117,11 @@ abstract class TypeToSchema extends TypeUtil.SchemaVisitor<Schema> {
       boolean isValidFieldName = AvroSchemaUtil.validAvroName(origFieldName);
       String fieldName = isValidFieldName ? origFieldName : AvroSchemaUtil.sanitize(origFieldName);
       Schema.Field field =
-          new Schema.Field(
-              fieldName,
-              fieldSchemas.get(i),
-              structField.doc(),
-              structField.isOptional() ? JsonProperties.NULL_VALUE : null);
+              new Schema.Field(
+                      fieldName,
+                      fieldSchemas.get(i),
+                      structField.doc(),
+                      structField.isOptional() ? JsonProperties.NULL_VALUE : null);
       if (!isValidFieldName) {
         field.addProp(AvroSchemaUtil.ICEBERG_FIELD_NAME_PROP, origFieldName);
       }
@@ -175,18 +175,18 @@ abstract class TypeToSchema extends TypeUtil.SchemaVisitor<Schema> {
     if (keySchema.getType() == Schema.Type.STRING) {
       // if the map has string keys, use Avro's map type
       mapSchema =
-          Schema.createMap(
-              map.isValueOptional() ? AvroSchemaUtil.toOption(valueSchema) : valueSchema);
+              Schema.createMap(
+                      map.isValueOptional() ? AvroSchemaUtil.toOption(valueSchema) : valueSchema);
       mapSchema.addProp(AvroSchemaUtil.KEY_ID_PROP, map.keyId());
       mapSchema.addProp(AvroSchemaUtil.VALUE_ID_PROP, map.valueId());
 
     } else {
       mapSchema =
-          AvroSchemaUtil.createMap(
-              map.keyId(),
-              keySchema,
-              map.valueId(),
-              map.isValueOptional() ? AvroSchemaUtil.toOption(valueSchema) : valueSchema);
+              AvroSchemaUtil.createMap(
+                      map.keyId(),
+                      keySchema,
+                      map.valueId(),
+                      map.isValueOptional() ? AvroSchemaUtil.toOption(valueSchema) : valueSchema);
     }
 
     cacheSchema(map, mapSchema);
@@ -198,14 +198,14 @@ abstract class TypeToSchema extends TypeUtil.SchemaVisitor<Schema> {
   public Schema variant(Types.VariantType variant) {
     String recordName = fieldIds.peek() != null ? "r" + fieldIds.peek() : "variant";
     Schema schema =
-        Schema.createRecord(
-            recordName,
-            null,
-            null,
-            false,
-            List.of(
-                new Schema.Field("metadata", BINARY_SCHEMA),
-                new Schema.Field("value", BINARY_SCHEMA)));
+            Schema.createRecord(
+                    recordName,
+                    null,
+                    null,
+                    false,
+                    List.of(
+                            new Schema.Field("metadata", BINARY_SCHEMA),
+                            new Schema.Field("value", BINARY_SCHEMA)));
     return VariantLogicalType.get().addToSchema(schema);
   }
 
@@ -267,13 +267,13 @@ abstract class TypeToSchema extends TypeUtil.SchemaVisitor<Schema> {
       case DECIMAL:
         Types.DecimalType decimal = (Types.DecimalType) primitive;
         primitiveSchema =
-            LogicalTypes.decimal(decimal.precision(), decimal.scale())
-                .addToSchema(
-                    Schema.createFixed(
-                        "decimal_" + decimal.precision() + "_" + decimal.scale(),
-                        null,
-                        null,
-                        TypeUtil.decimalRequiredBytes(decimal.precision())));
+                LogicalTypes.decimal(decimal.precision(), decimal.scale())
+                        .addToSchema(
+                                Schema.createFixed(
+                                        "decimal_" + decimal.precision() + "_" + decimal.scale(),
+                                        null,
+                                        null,
+                                        TypeUtil.decimalRequiredBytes(decimal.precision())));
         break;
       default:
         throw new UnsupportedOperationException("Unsupported type ID: " + primitive.typeId());
