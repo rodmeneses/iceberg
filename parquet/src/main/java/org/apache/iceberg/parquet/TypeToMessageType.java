@@ -55,15 +55,15 @@ public class TypeToMessageType {
   private static final LogicalTypeAnnotation STRING = LogicalTypeAnnotation.stringType();
   private static final LogicalTypeAnnotation DATE = LogicalTypeAnnotation.dateType();
   private static final LogicalTypeAnnotation TIME_MICROS =
-          LogicalTypeAnnotation.timeType(false /* not adjusted to UTC */, TimeUnit.MICROS);
+      LogicalTypeAnnotation.timeType(false /* not adjusted to UTC */, TimeUnit.MICROS);
   private static final LogicalTypeAnnotation TIMESTAMP_MICROS =
-          LogicalTypeAnnotation.timestampType(false /* not adjusted to UTC */, TimeUnit.MICROS);
+      LogicalTypeAnnotation.timestampType(false /* not adjusted to UTC */, TimeUnit.MICROS);
   private static final LogicalTypeAnnotation TIMESTAMPTZ_MICROS =
-          LogicalTypeAnnotation.timestampType(true /* adjusted to UTC */, TimeUnit.MICROS);
+      LogicalTypeAnnotation.timestampType(true /* adjusted to UTC */, TimeUnit.MICROS);
   private static final LogicalTypeAnnotation TIMESTAMP_NANOS =
-          LogicalTypeAnnotation.timestampType(false /* not adjusted to UTC */, TimeUnit.NANOS);
+      LogicalTypeAnnotation.timestampType(false /* not adjusted to UTC */, TimeUnit.NANOS);
   private static final LogicalTypeAnnotation TIMESTAMPTZ_NANOS =
-          LogicalTypeAnnotation.timestampType(true /* adjusted to UTC */, TimeUnit.NANOS);
+      LogicalTypeAnnotation.timestampType(true /* adjusted to UTC */, TimeUnit.NANOS);
   private static final String METADATA = "metadata";
   private static final String VALUE = "value";
   private static final String TYPED_VALUE = "typed_value";
@@ -108,7 +108,7 @@ public class TypeToMessageType {
 
   public Type field(NestedField field) {
     Type.Repetition repetition =
-            field.isOptional() ? Type.Repetition.OPTIONAL : Type.Repetition.REQUIRED;
+        field.isOptional() ? Type.Repetition.OPTIONAL : Type.Repetition.REQUIRED;
     int id = field.fieldId();
     String name = field.name();
 
@@ -138,12 +138,12 @@ public class TypeToMessageType {
     NestedField elementField = list.fields().get(0);
     Type elementType = field(elementField);
     Preconditions.checkArgument(
-            elementType != null, "Cannot convert element Parquet: %s", elementField.type());
+        elementType != null, "Cannot convert element Parquet: %s", elementField.type());
 
     return Types.list(repetition)
-            .element(elementType)
-            .id(id)
-            .named(AvroSchemaUtil.makeCompatibleName(name));
+        .element(elementType)
+        .id(id)
+        .named(AvroSchemaUtil.makeCompatibleName(name));
   }
 
   public GroupType map(MapType map, Type.Repetition repetition, int id, String name) {
@@ -153,13 +153,13 @@ public class TypeToMessageType {
     Preconditions.checkArgument(keyType != null, "Cannot convert key Parquet: %s", keyField.type());
     Type valueType = field(valueField);
     Preconditions.checkArgument(
-            valueType != null, "Cannot convert value Parquet: %s", valueField.type());
+        valueType != null, "Cannot convert value Parquet: %s", valueField.type());
 
     return Types.map(repetition)
-            .key(field(keyField))
-            .value(field(valueField))
-            .id(id)
-            .named(AvroSchemaUtil.makeCompatibleName(name));
+        .key(field(keyField))
+        .value(field(valueField))
+        .id(id)
+        .named(AvroSchemaUtil.makeCompatibleName(name));
   }
 
   public Type variant(Type.Repetition repetition, int id, String originalName) {
@@ -173,36 +173,36 @@ public class TypeToMessageType {
 
     if (shreddedType != null) {
       Preconditions.checkArgument(
-              shreddedType.getName().equals(TYPED_VALUE),
-              "Invalid shredded type name: %s should be typed_value",
-              shreddedType.getName());
+          shreddedType.getName().equals(TYPED_VALUE),
+          "Invalid shredded type name: %s should be typed_value",
+          shreddedType.getName());
       Preconditions.checkArgument(
-              shreddedType.isRepetition(Type.Repetition.OPTIONAL),
-              "Invalid shredded type repetition: %s should be OPTIONAL",
-              shreddedType.getRepetition());
+          shreddedType.isRepetition(Type.Repetition.OPTIONAL),
+          "Invalid shredded type repetition: %s should be OPTIONAL",
+          shreddedType.getRepetition());
 
       return Types.buildGroup(repetition)
-              .id(id)
-              .required(BINARY)
-              .named(METADATA)
-              .optional(BINARY)
-              .named(VALUE)
-              .addField(shreddedType)
-              .named(name);
+          .id(id)
+          .required(BINARY)
+          .named(METADATA)
+          .optional(BINARY)
+          .named(VALUE)
+          .addField(shreddedType)
+          .named(name);
 
     } else {
       return Types.buildGroup(repetition)
-              .id(id)
-              .required(BINARY)
-              .named(METADATA)
-              .required(BINARY)
-              .named(VALUE)
-              .named(name);
+          .id(id)
+          .required(BINARY)
+          .named(METADATA)
+          .required(BINARY)
+          .named(VALUE)
+          .named(name);
     }
   }
 
   public Type primitive(
-          PrimitiveType primitive, Type.Repetition repetition, int id, String originalName) {
+      PrimitiveType primitive, Type.Repetition repetition, int id, String originalName) {
     String name = AvroSchemaUtil.makeCompatibleName(originalName);
     switch (primitive.typeId()) {
       case BOOLEAN:
@@ -239,9 +239,9 @@ public class TypeToMessageType {
         FixedType fixed = (FixedType) primitive;
 
         return Types.primitive(FIXED_LEN_BYTE_ARRAY, repetition)
-                .length(fixed.length())
-                .id(id)
-                .named(name);
+            .length(fixed.length())
+            .id(id)
+            .named(name);
 
       case DECIMAL:
         DecimalType decimal = (DecimalType) primitive;
@@ -249,33 +249,33 @@ public class TypeToMessageType {
         if (decimal.precision() <= DECIMAL_INT32_MAX_DIGITS) {
           // store as an int
           return Types.primitive(INT32, repetition)
-                  .as(decimalAnnotation(decimal.precision(), decimal.scale()))
-                  .id(id)
-                  .named(name);
+              .as(decimalAnnotation(decimal.precision(), decimal.scale()))
+              .id(id)
+              .named(name);
 
         } else if (decimal.precision() <= DECIMAL_INT64_MAX_DIGITS) {
           // store as a long
           return Types.primitive(INT64, repetition)
-                  .as(decimalAnnotation(decimal.precision(), decimal.scale()))
-                  .id(id)
-                  .named(name);
+              .as(decimalAnnotation(decimal.precision(), decimal.scale()))
+              .id(id)
+              .named(name);
 
         } else {
           // store as a fixed-length array
           int minLength = TypeUtil.decimalRequiredBytes(decimal.precision());
           return Types.primitive(FIXED_LEN_BYTE_ARRAY, repetition)
-                  .length(minLength)
-                  .as(decimalAnnotation(decimal.precision(), decimal.scale()))
-                  .id(id)
-                  .named(name);
+              .length(minLength)
+              .as(decimalAnnotation(decimal.precision(), decimal.scale()))
+              .id(id)
+              .named(name);
         }
 
       case UUID:
         return Types.primitive(FIXED_LEN_BYTE_ARRAY, repetition)
-                .length(16)
-                .as(LogicalTypeAnnotation.uuidType())
-                .id(id)
-                .named(name);
+            .length(16)
+            .as(LogicalTypeAnnotation.uuidType())
+            .id(id)
+            .named(name);
 
       default:
         throw new UnsupportedOperationException("Unsupported type for Parquet: " + primitive);

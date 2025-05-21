@@ -45,11 +45,11 @@ abstract class BaseParquetWriter<T> {
   @SuppressWarnings("unchecked")
   protected ParquetValueWriter<T> createWriter(Types.StructType struct, MessageType type) {
     return (ParquetValueWriter<T>)
-            TypeWithSchemaVisitor.visit(struct, type, new WriteBuilder(type));
+        TypeWithSchemaVisitor.visit(struct, type, new WriteBuilder(type));
   }
 
   protected abstract ParquetValueWriters.StructWriter<T> createStructWriter(
-          Types.StructType struct, List<ParquetValueWriter<?>> writers);
+      Types.StructType struct, List<ParquetValueWriter<?>> writers);
 
   protected abstract ParquetValueWriter<?> fixedWriter(ColumnDescriptor desc);
 
@@ -58,7 +58,7 @@ abstract class BaseParquetWriter<T> {
   protected abstract ParquetValueWriter<?> timeWriter(ColumnDescriptor desc);
 
   protected abstract ParquetValueWriter<?> timestampWriter(
-          ColumnDescriptor desc, boolean isAdjustedToUTC);
+      ColumnDescriptor desc, boolean isAdjustedToUTC);
 
   private class WriteBuilder extends TypeWithSchemaVisitor<ParquetValueWriter<?>> {
     private final MessageType type;
@@ -69,14 +69,14 @@ abstract class BaseParquetWriter<T> {
 
     @Override
     public ParquetValueWriter<?> message(
-            Types.StructType struct, MessageType message, List<ParquetValueWriter<?>> fieldWriters) {
+        Types.StructType struct, MessageType message, List<ParquetValueWriter<?>> fieldWriters) {
 
       return struct(struct, message.asGroupType(), fieldWriters);
     }
 
     @Override
     public ParquetValueWriter<?> struct(
-            Types.StructType iceberg, GroupType struct, List<ParquetValueWriter<?>> fieldWriters) {
+        Types.StructType iceberg, GroupType struct, List<ParquetValueWriter<?>> fieldWriters) {
       List<Type> fields = struct.getFields();
       List<ParquetValueWriter<?>> writers = Lists.newArrayListWithExpectedSize(fieldWriters.size());
       for (int i = 0; i < fields.size(); i += 1) {
@@ -90,7 +90,7 @@ abstract class BaseParquetWriter<T> {
 
     @Override
     public ParquetValueWriter<?> list(
-            Types.ListType iceberg, GroupType array, ParquetValueWriter<?> elementWriter) {
+        Types.ListType iceberg, GroupType array, ParquetValueWriter<?> elementWriter) {
       GroupType repeated = array.getFields().get(0).asGroupType();
       String[] repeatedPath = currentPath();
 
@@ -101,15 +101,15 @@ abstract class BaseParquetWriter<T> {
       int elementD = type.getMaxDefinitionLevel(path(elementType.getName()));
 
       return ParquetValueWriters.collections(
-              repeatedD, repeatedR, ParquetValueWriters.option(elementType, elementD, elementWriter));
+          repeatedD, repeatedR, ParquetValueWriters.option(elementType, elementD, elementWriter));
     }
 
     @Override
     public ParquetValueWriter<?> map(
-            Types.MapType iceberg,
-            GroupType map,
-            ParquetValueWriter<?> keyWriter,
-            ParquetValueWriter<?> valueWriter) {
+        Types.MapType iceberg,
+        GroupType map,
+        ParquetValueWriter<?> keyWriter,
+        ParquetValueWriter<?> valueWriter) {
       GroupType repeatedKeyValue = map.getFields().get(0).asGroupType();
       String[] repeatedPath = currentPath();
 
@@ -122,20 +122,20 @@ abstract class BaseParquetWriter<T> {
       int valueD = type.getMaxDefinitionLevel(path(valueType.getName()));
 
       return ParquetValueWriters.maps(
-              repeatedD,
-              repeatedR,
-              ParquetValueWriters.option(keyType, keyD, keyWriter),
-              ParquetValueWriters.option(valueType, valueD, valueWriter));
+          repeatedD,
+          repeatedR,
+          ParquetValueWriters.option(keyType, keyD, keyWriter),
+          ParquetValueWriters.option(valueType, valueD, valueWriter));
     }
 
     @Override
     public ParquetValueWriter<?> primitive(
-            org.apache.iceberg.types.Type.PrimitiveType iceberg, PrimitiveType primitive) {
+        org.apache.iceberg.types.Type.PrimitiveType iceberg, PrimitiveType primitive) {
       ColumnDescriptor desc = type.getColumnDescription(currentPath());
       LogicalTypeAnnotation logicalType = primitive.getLogicalTypeAnnotation();
       if (logicalType != null) {
         Optional<ParquetValueWriter<?>> writer =
-                logicalType.accept(new LogicalTypeWriterVisitor(desc));
+            logicalType.accept(new LogicalTypeWriterVisitor(desc));
         if (writer.isPresent()) {
           return writer.get();
         }
@@ -163,7 +163,7 @@ abstract class BaseParquetWriter<T> {
 
     @Override
     public ParquetValueWriter<?> variant(
-            Types.VariantType iVariant, GroupType variant, ParquetValueWriter<?> result) {
+        Types.VariantType iVariant, GroupType variant, ParquetValueWriter<?> result) {
       return result;
     }
 
@@ -174,7 +174,7 @@ abstract class BaseParquetWriter<T> {
   }
 
   private class LogicalTypeWriterVisitor
-          implements LogicalTypeAnnotation.LogicalTypeAnnotationVisitor<ParquetValueWriter<?>> {
+      implements LogicalTypeAnnotation.LogicalTypeAnnotationVisitor<ParquetValueWriter<?>> {
     private final ColumnDescriptor desc;
 
     private LogicalTypeWriterVisitor(ColumnDescriptor desc) {
@@ -183,69 +183,69 @@ abstract class BaseParquetWriter<T> {
 
     @Override
     public Optional<ParquetValueWriter<?>> visit(
-            LogicalTypeAnnotation.StringLogicalTypeAnnotation stringType) {
+        LogicalTypeAnnotation.StringLogicalTypeAnnotation stringType) {
       return Optional.of(ParquetValueWriters.strings(desc));
     }
 
     @Override
     public Optional<ParquetValueWriter<?>> visit(
-            LogicalTypeAnnotation.EnumLogicalTypeAnnotation enumType) {
+        LogicalTypeAnnotation.EnumLogicalTypeAnnotation enumType) {
       return Optional.of(ParquetValueWriters.strings(desc));
     }
 
     @Override
     public Optional<ParquetValueWriter<?>> visit(
-            LogicalTypeAnnotation.DecimalLogicalTypeAnnotation decimalType) {
+        LogicalTypeAnnotation.DecimalLogicalTypeAnnotation decimalType) {
       switch (desc.getPrimitiveType().getPrimitiveTypeName()) {
         case INT32:
           return Optional.of(
-                  ParquetValueWriters.decimalAsInteger(
-                          desc, decimalType.getPrecision(), decimalType.getScale()));
+              ParquetValueWriters.decimalAsInteger(
+                  desc, decimalType.getPrecision(), decimalType.getScale()));
         case INT64:
           return Optional.of(
-                  ParquetValueWriters.decimalAsLong(
-                          desc, decimalType.getPrecision(), decimalType.getScale()));
+              ParquetValueWriters.decimalAsLong(
+                  desc, decimalType.getPrecision(), decimalType.getScale()));
         case BINARY:
         case FIXED_LEN_BYTE_ARRAY:
           return Optional.of(
-                  ParquetValueWriters.decimalAsFixed(
-                          desc, decimalType.getPrecision(), decimalType.getScale()));
+              ParquetValueWriters.decimalAsFixed(
+                  desc, decimalType.getPrecision(), decimalType.getScale()));
       }
       return Optional.empty();
     }
 
     @Override
     public Optional<ParquetValueWriter<?>> visit(
-            LogicalTypeAnnotation.DateLogicalTypeAnnotation dateType) {
+        LogicalTypeAnnotation.DateLogicalTypeAnnotation dateType) {
       return Optional.of(dateWriter(desc));
     }
 
     @Override
     public Optional<ParquetValueWriter<?>> visit(
-            LogicalTypeAnnotation.TimeLogicalTypeAnnotation timeType) {
+        LogicalTypeAnnotation.TimeLogicalTypeAnnotation timeType) {
       Preconditions.checkArgument(
-              LogicalTypeAnnotation.TimeUnit.MICROS.equals(timeType.getUnit()),
-              "Cannot write time in %s, only MICROS is supported",
-              timeType.getUnit());
+          LogicalTypeAnnotation.TimeUnit.MICROS.equals(timeType.getUnit()),
+          "Cannot write time in %s, only MICROS is supported",
+          timeType.getUnit());
       return Optional.of(timeWriter(desc));
     }
 
     @Override
     public Optional<ParquetValueWriter<?>> visit(
-            LogicalTypeAnnotation.TimestampLogicalTypeAnnotation timestampType) {
+        LogicalTypeAnnotation.TimestampLogicalTypeAnnotation timestampType) {
       Preconditions.checkArgument(
-              !LogicalTypeAnnotation.TimeUnit.MILLIS.equals(timestampType.getUnit()),
-              "Cannot write timestamp in %s, only MICROS and NANOS are supported",
-              timestampType.getUnit());
+          !LogicalTypeAnnotation.TimeUnit.MILLIS.equals(timestampType.getUnit()),
+          "Cannot write timestamp in %s, only MICROS and NANOS are supported",
+          timestampType.getUnit());
       return Optional.of(timestampWriter(desc, timestampType.isAdjustedToUTC()));
     }
 
     @Override
     public Optional<ParquetValueWriter<?>> visit(
-            LogicalTypeAnnotation.IntLogicalTypeAnnotation intType) {
+        LogicalTypeAnnotation.IntLogicalTypeAnnotation intType) {
       Preconditions.checkArgument(
-              intType.isSigned() || intType.getBitWidth() < 64,
-              "Cannot read uint64: not a supported Java type");
+          intType.isSigned() || intType.getBitWidth() < 64,
+          "Cannot read uint64: not a supported Java type");
       if (intType.getBitWidth() < 64) {
         return Optional.of(ParquetValueWriters.ints(desc));
       } else {
@@ -255,19 +255,19 @@ abstract class BaseParquetWriter<T> {
 
     @Override
     public Optional<ParquetValueWriter<?>> visit(
-            LogicalTypeAnnotation.JsonLogicalTypeAnnotation jsonLogicalType) {
+        LogicalTypeAnnotation.JsonLogicalTypeAnnotation jsonLogicalType) {
       return Optional.of(ParquetValueWriters.strings(desc));
     }
 
     @Override
     public Optional<ParquetValueWriter<?>> visit(
-            LogicalTypeAnnotation.BsonLogicalTypeAnnotation bsonType) {
+        LogicalTypeAnnotation.BsonLogicalTypeAnnotation bsonType) {
       return Optional.of(ParquetValueWriters.byteBuffers(desc));
     }
 
     @Override
     public Optional<ParquetValueWriter<?>> visit(
-            LogicalTypeAnnotation.UUIDLogicalTypeAnnotation uuidLogicalType) {
+        LogicalTypeAnnotation.UUIDLogicalTypeAnnotation uuidLogicalType) {
       return Optional.of(ParquetValueWriters.uuids(desc));
     }
   }
