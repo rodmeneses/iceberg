@@ -74,6 +74,12 @@ import org.apache.iceberg.util.SerializableSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @deprecated since Iceberg Version 1.10.0, will be removed in 1.11.0. Use {@link
+ *     org.apache.iceberg.flink.sink.IcebergSink} instead which is based on the latest Flink SinkV2
+ *     interfaces
+ */
+@Deprecated
 public class FlinkSink {
   private static final Logger LOG = LoggerFactory.getLogger(FlinkSink.class);
 
